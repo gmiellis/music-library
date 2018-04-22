@@ -2,41 +2,42 @@ const mongoose = require('mongoose');
 const path = require('path');
 const httpMocks = require('node-mocks-http');
 const events = require('events');
-const { get } = require('../../controllers/Artist');
+const { list } = require('../../controllers/Artist');
 const Artist = require('../../models/Artist');
 
 require('dotenv').config({
   path: path.join(__dirname, '../../settings.env'),
 });
 
-describe('GET Artist endpoint', () => {
+describe('GET Artists endpoint', () => {
   beforeAll((done) => {
     mongoose.connect(process.env.TEST_DATABASE_CONN, done);
   });
 
-  it('Should retrieve an artist from the database', (done) => {
-    const artist = new Artist({ name: 'Coldplay', genre: 'sad' });
-    artist.save((err, artistCreated) => {
+  it('Should retrieve all artists from the database', (done) => {
+    const artists = [
+      { name: 'tame impala', genre: 'rock' },
+      { name: 'jamal', genre: '90s hiphop' },
+      { name: 'Jeru the Damaja', genre: '90s hiphop' },
+    ];
+    Artist.create(artists, (err) => {
       if (err) {
         console.log(err, 'stuff went wrong');
       }
       const request = httpMocks.createRequest({
         method: 'GET',
-        URL: '/Artist/123',
-        params: {
-          artistId: artistCreated._id, // eslint-disable-line
-        },
+        URL: '/Artist',
       });
 
       const response = httpMocks.createResponse({
         eventEmitter: events.EventEmitter,
       });
-      get(request, response);
+      list(request, response);
 
       response.on('end', () => {
-        const artistsFound = JSON.parse(response._getData()); //eslint-disable-line
-        expect(artistsFound.name).toBe('Coldplay');
-        expect(artistsFound.genre).toBe('sad');
+        const listOfArtists = JSON.parse(response._getData()); //eslint-disable-line
+        expect(listOfArtists.map(e => e.name)).toEqual(expect.arrayContaining(['tame impala', 'jamal', 'Jeru the Damaja']));
+        expect(listOfArtists).toHaveLength(3);
         done();
       });
     });

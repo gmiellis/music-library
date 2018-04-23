@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const path = require('path');
 const httpMocks = require('node-mocks-http');
 const events = require('events');
-const { put } = require('../../controllers/Artist');
+const { deleteArtist } = require('../../controllers/Artist');
 const Artist = require('../../models/Artist');
 
 require('dotenv').config({
@@ -22,14 +22,10 @@ describe('PUT Artist endpoint', () => {
       }
 
       const request = httpMocks.createRequest({
-        method: 'PUT',
+        method: 'DELETE',
         URL: '/Artist/1234',
         params: {
           artistId: artistCreated._id, // eslint-disable-line
-        },
-        body: {
-          name: 'Coldplay',
-          genre: 'Rock',
         },
       });
 
@@ -37,17 +33,13 @@ describe('PUT Artist endpoint', () => {
         eventEmitter: events.EventEmitter,
       });
 
-      put(request, response);
+      deleteArtist(request, response);
 
       response.on('end', () => {
-        const updatedArtist = JSON.parse(response._getData()); //eslint-disable-line
-        expect(updatedArtist).toEqual({
-          __v: 0,
-          _id: artistCreated._id.toString(), // eslint-disable-line
-          name: 'Coldplay',
-          genre: 'Rock',
+        Artist.findById(artistCreated._id, (err, noSuchArtist) => {
+          expect(noSuchArtist).toBe(null);
+          done();
         });
-        done();
       });
     });
   });

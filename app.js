@@ -18,5 +18,6 @@ app.get('/Artist', ArtistController.list);
 app.get('/Artist/:artistId', ArtistController.get);
 app.put('/Artist/:artistId', ArtistController.put);
 app.delete('/Artist/:artistId', ArtistController.deleteArtist);
+app.post('/Artist/:artistId/albums', ArtistController.putAlbum);
 
 app.listen(3000, () => console.log('Music Library API is running'));

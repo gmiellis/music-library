@@ -45,7 +45,6 @@ describe('PUT Artist endpoint', () => {
           __v: 0,
           _id: artistCreated._id.toString(), // eslint-disable-line
           name: 'Coldplay',
-          albums: [],
           genre: 'Rock',
         });
         done();

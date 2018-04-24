@@ -2,19 +2,19 @@ const mongoose = require('mongoose');
 const path = require('path');
 const httpMocks = require('node-mocks-http');
 const events = require('events');
-const { put } = require('../../controllers/Artist');
+const { putAlbum } = require('../../controllers/Artist');
 const Artist = require('../../models/Artist');
 
 require('dotenv').config({
   path: path.join(__dirname, '../../settings.env'),
 });
 
-describe('PUT Artist endpoint', () => {
+describe('PUT album endpoint', () => {
   beforeAll((done) => {
     mongoose.connect(process.env.TEST_DATABASE_CONN, done);
   });
 
-  it('Should update an artist record when PUT endpoint is called', (done) => {
+  it('should add an album to an artist', (done) => {
     const artist = new Artist({ name: 'Coldplay', genre: 'sad' });
     artist.save((err, artistCreated) => {
       if (err) {
@@ -23,13 +23,13 @@ describe('PUT Artist endpoint', () => {
 
       const request = httpMocks.createRequest({
         method: 'PUT',
-        URL: '/Artist/1234',
+        URL: `/artist/${artistCreated._id}/album`, // eslint-disable-line
         params: {
           artistId: artistCreated._id, // eslint-disable-line
         },
         body: {
-          name: 'Coldplay',
-          genre: 'Rock',
+          name: 'Ghost Stories',
+          year: 2014,
         },
       });
 
@@ -37,17 +37,11 @@ describe('PUT Artist endpoint', () => {
         eventEmitter: events.EventEmitter,
       });
 
-      put(request, response);
+      putAlbum(request, response);
 
       response.on('end', () => {
-        const updatedArtist = JSON.parse(response._getData()); //eslint-disable-line
-        expect(updatedArtist).toEqual({
-          __v: 0,
-          _id: artistCreated._id.toString(), // eslint-disable-line
-          name: 'Coldplay',
-          albums: [],
-          genre: 'Rock',
-        });
+        const foundArtist = JSON.parse(response._getData()); //eslint-disable-line
+        expect(foundArtist.albums.length).toEqual(1);
         done();
       });
     });

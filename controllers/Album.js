@@ -22,3 +22,13 @@ exports.postAlbum = (req, res) => {
     });
   });
 };
+
+exports.getAlbums = (req, res) => {
+  Album.find({ artist: req.params.artistId }).populate('artist').exec((err, albums) => {
+    if (err) {
+      res.json('Unable to retrieve albums');
+    }
+
+    res.json(albums);
+  });
+};

@@ -2,19 +2,19 @@ const mongoose = require('mongoose');
 const path = require('path');
 const httpMocks = require('node-mocks-http');
 const events = require('events');
-const { putAlbum } = require('../../controllers/Artist');
+const { put } = require('../../controllers/Artist');
 const Artist = require('../../models/Artist');
 
 require('dotenv').config({
   path: path.join(__dirname, '../../settings.env'),
 });
 
-describe('PUT Album endpoint', () => {
+describe('PUT Artist endpoint', () => {
   beforeAll((done) => {
     mongoose.connect(process.env.TEST_DATABASE_CONN, done);
   });
 
-  it('Should add an album to an Artist', (done) => {
+  it('Should update an artist record when PUT endpoint is called', (done) => {
     const artist = new Artist({ name: 'Coldplay', genre: 'sad' });
     artist.save((err, artistCreated) => {
       if (err) {
@@ -23,13 +23,13 @@ describe('PUT Album endpoint', () => {
 
       const request = httpMocks.createRequest({
         method: 'PUT',
-        URL: `/artist/${artistCreated._id}/album`, // eslint-disable-line
+        URL: '/Artist/1234',
         params: {
           artistId: artistCreated._id, // eslint-disable-line
         },
         body: {
-          name: 'Ghost Stories',
-          year: 2014,
+          name: 'Coldplay',
+          genre: 'Rock',
         },
       });
 
@@ -37,15 +37,17 @@ describe('PUT Album endpoint', () => {
         eventEmitter: events.EventEmitter,
       });
 
-      putAlbum(request, response);
+      put(request, response);
 
       response.on('end', () => {
-        Artist.findById(artistCreated._id, (err, foundArtist) => { //eslint-disable-line
-          console.log(foundArtist)
-          expect(foundArtist.albums.length).toEqual(1);
-
-          done();
+        const updatedArtist = JSON.parse(response._getData()); //eslint-disable-line
+        expect(updatedArtist).toEqual({
+          __v: 0,
+          _id: artistCreated._id.toString(), // eslint-disable-line
+          name: 'Coldplay',
+          genre: 'Rock',
         });
+        done();
       });
     });
   });

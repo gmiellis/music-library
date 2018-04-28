@@ -11,7 +11,7 @@ require('dotenv').config({
   path: path.join(__dirname, '../../settings.env'),
 });
 
-describe('PUT album endpoint', () => {
+describe('POST song endpoint', () => {
   beforeAll((done) => {
     mongoose.connect(process.env.TEST_DATABASE_CONN, done);
   });
@@ -30,9 +30,9 @@ describe('PUT album endpoint', () => {
         }
         const request = httpMocks.createRequest({
           method: 'POST',
-            URL: `/album/${albumCreated._id}/song`, // eslint-disable-line
+          url: `/album/${albumCreated._id}/song`, // eslint-disable-line
           params: {
-              albumId: albumCreated._id // eslint-disable-line
+            albumId: albumCreated._id // eslint-disable-line
           },
           body: {
             name: 'A Sky Full of Stars',
